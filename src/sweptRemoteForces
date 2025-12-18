@@ -1,0 +1,30 @@
+# swept remote forces
+
+analysis = Model.Analyses[0]
+ns_list = Model.NamedSelections.Children
+
+for ns in ns_list:
+    if ns.Name.Contains("face1"):
+        face1 = ns
+    elif ns.Name.Contains("face2"):
+        face2 = ns
+
+xmin = -0.2
+xmax = 0.2
+Npts = 10
+
+timevec = [Quantity(t + 1, 's') for t in range(Npts)]
+
+for i in range(Npts):
+    forcevec = [Quantity(0, 'N')] * Npts
+    forcevec[i] = Quantity(1000, 'N')
+
+    xf = xmin + i * (xmax - xmin) / (Npts - 1)
+
+    for face in (face1, face2):
+        f = analysis.AddRemoteForce()
+        f.Location = face
+        f.XCoordinate = Quantity(xf, 'm')
+        f.Magnitude.Inputs[0].DiscreteValues = timevec
+        f.Magnitude.Output.DiscreteValues = forcevec
+        f.PinballRegion = Quantity(0.07, 'm')
